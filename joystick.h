@@ -2,6 +2,7 @@
 #define JOYSTICK_H
 
 #include <QObject>
+#include mysfml, mysdl, mode1, mode2, mode3 .h
 
 class Joystick : public QObject
 {
