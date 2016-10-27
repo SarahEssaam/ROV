@@ -5,5 +5,5 @@ Mode1 : public Mode
 
 }
 
-void Do_x(){
+void do_x(){
 }
