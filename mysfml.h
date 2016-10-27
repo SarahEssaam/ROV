@@ -1,6 +1,7 @@
 #ifndef MYSFML_H
 #define MYSFML_H
 
+#include <SFML>
 
 class MySFML
 {
