@@ -1,4 +1,4 @@
-#include "mode1.h"
+#include "mode.h"
 
 Mode1 : public Mode
 {
