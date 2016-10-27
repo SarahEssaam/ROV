@@ -18,10 +18,10 @@ public slots:
 private:
     int activeMode = 0;
     mode[];
-    // create pointer to the library we will use
-    // MySFML* myLibrary;
-    //or MySDL* myLibrary;
-
+    //x,y,povx,povy,z,buttons[],..
+    // create pointer to the library we will use(or object from)
+    //MySFML / MySDL myLibrary; 
+    //timer
 
 };
 
