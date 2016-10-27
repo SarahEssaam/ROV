@@ -1,3 +1,3 @@
 #include "mode.h"
 
-virtual void Do_x(){}
+virtual void do_x(){}
