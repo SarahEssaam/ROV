@@ -1,9 +1,9 @@
 #include "mode.h"
 #define STEP 0.1
 
-//driving mode
+//manipulator mode
 
-class Mode1 : public Mode
+class Mode2 : public Mode
 {
             
 void do_x(){
