@@ -1,6 +1,6 @@
 #include "mode.h"
 
-Mode3 : public Mode
+class Mode3 : public Mode
 {
 
 void do_x(){
