@@ -5,12 +5,13 @@
 
 Mode1 : public Mode
 {
-
+            
 }
 
 void do_x(){
+            x=myLibrary->getAxisPosition(0,sf::Joystick::X);
+            y=myLibrary->getAxisPosition(0,sf::Joystick::Y);
+            manX=myLibrary->getAxisPosition(0,sf::Joystick::PovX);
+            manY=myLibrary->getAxisPosition(0,sf::Joystick::PovY);
 }
-x=sf::Joystick::getAxisPosition(0,sf::Joystick::X);
-            y=sf::Joystick::getAxisPosition(0,sf::Joystick::Y);
-            manX=sf::Joystick::getAxisPosition(0,sf::Joystick::PovX);
-            manY=sf::Joystick::getAxisPosition(0,sf::Joystick::PovY);
+           
