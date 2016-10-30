@@ -1,5 +1,5 @@
 #include "mode.h"
-#define STEP 0.25
+#define STEP 0.1
 
 //driving mode
 
