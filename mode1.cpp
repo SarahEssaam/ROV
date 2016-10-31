@@ -3,10 +3,10 @@
 
 //driving mode
 
-class Mode1 : public Mode
+class Driving : public Mode
 {
             
-void do_x(){
+void do_x(MyJoysickLibrary* myLibrary){
             x=myLibrary->getAxisPosition(0,X);
             y=myLibrary->getAxisPosition(0,Y);
             
