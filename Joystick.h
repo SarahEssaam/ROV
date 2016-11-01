@@ -21,10 +21,12 @@ class Joystick {
   MyJoysickLibrary* myLibrary;
   sender tcp_object;
 
-  public:
+  private:
   void update_modes();
   void update_buttons();
-  void tcp_send();
+  void reset_axis();
+  void init_axis();
+  void init_modes();
   
   public slots:
   void update_states();
