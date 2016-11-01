@@ -1,10 +1,10 @@
 #include "joystick.h"
 
 Joystick(){
-  my_library = new mySFML();
-  mode[DRIVE] = new drive();
-  mode[MANIP] = new manip();
-  mode[ROTATE] = new rotate();
+  my_library = new MyJoystickLibrary();
+  mode[DRIVE] = new Drive();
+  mode[MANIP] = new Manip();
+  mode[ROTATE] = new Rotate();
   active_mode = mode[DRIVE];
   previous_mode = mode[DRIVE];
   timer = new QTimer();
@@ -18,9 +18,9 @@ update_states{
    reset_variables();
    previous_mode = active_mode;
   }
-  active_mode->do_x(myLibrary,&current_axis);
+//  active_mode->do_x(myLibrary,&current_axis);
   update_buttons();
-  tcp_object.send(current_axis);
+//  tcp_object.send(&current_axis);
 }
 
 
@@ -31,7 +31,6 @@ void update_buttons(){
 }
 
 reset_variables(){
- //7d y.check l klam da 3shan b5rf 8albn
   /*
   QMap<QString, int>::iterator i;
   for (i = current_axis.begin(); i != current_axis.end(); ++i)
