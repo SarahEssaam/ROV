@@ -1,6 +1,7 @@
 #include <QObject>
-#include <Qmap>
+#include <QMap>
 #include <QTimer>
+#include "myjoysticklibrary.h"
 #include "mode.h"
 #include "drive.h"
 #include "manip.h"
@@ -18,6 +19,7 @@ class Joystick {
   QTimer timer;
   Qmap <Qstring,int> current_axis;
   MyJoysickLibrary* myLibrary;
+  sender tcp_object;
 
   public:
   void update_modes();
