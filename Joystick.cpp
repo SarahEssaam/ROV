@@ -1,3 +1,4 @@
+#include "joystick.h"
 
 Joystick(){
   my_library = new mySFML();
@@ -17,20 +18,23 @@ update_states{
    reset_variables();
    previous_mode = active_mode;
   }
-  active_mode->do_x(myLibrary);
+  active_mode->do_x(myLibrary,&current_axis);
   update_buttons();
-  tcp_send();
+  tcp_object.send(current_axis);
 }
 
 
 void update_modes(){
 }
 
-void tcp_send(){}
-
 void update_buttons(){
 }
 
 reset_variables(){
-  
+ //7d y.check l klam da 3shan b5rf 8albn
+  /*
+  QMap<QString, int>::iterator i;
+  for (i = current_axis.begin(); i != current_axis.end(); ++i)
+    i = 0;
+    */
 }
