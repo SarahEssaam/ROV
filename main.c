@@ -176,22 +176,33 @@ ISR (TIMER0_COMPB_vect){
 	toCountB--;
 }
 void i2c_init(){
+	TWBR = 0;
+	//l comments l gya de talla3t 3kk aw actually mfish data kant btege
+	//TWBR = 100;
+	//N=1
+	/*TWSR |= (1<<0);*/
 	TWCR |= (1<<TWEA);
 	TWCR |= (1<<TWEN);
 	TWCR |= (1<<TWIE);
-	TWAR |= (1<<TWGCE);
+	TWAR = 0x03;
+	TWCR |= (1<<TWINT);
 }
 
 ISR (TWI_vect){
-	if (k==0){
-	PORTC &= ~(1<<P_RPI_F);
-	}
-	pwm[k] = TWDR;
-	k++;
-	TWCR |= (1<<TWINT);
-	if(k==6){
-	ack = 1;
-	k = 0;
-	}
+// 	if (k==0){
+// 	PORTC &= ~(1<<P_RPI_F);
+// 	}
+// 	if(k==6){
+// 	ack = 1;
+// 	k = 0;
+// 	}
 	/*TWCR &= ~(1<<TWIE);*/
+	if((TWSR&(0xF8))==0x60){
+		TWCR |= (1<<TWEN)|(TWINT);
+	}
+	else if((TWSR&(0xF8))==0x80){
+		pwm[k] = TWDR;
+		k++;
+		TWCR |= (1<<TWEN)|(TWINT)|(1<<TWEA);
+	}
 }
