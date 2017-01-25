@@ -19,10 +19,6 @@ typedef enum {
 
 volatile unsigned char ack =1;
 volatile unsigned int pwm[] = {2250*2,630*2,1000*2,2250*2,1000*2,630*2};
-void Timer0_CTC_init();
-void init_pwm();
-void i2c_init();
-
 volatile status state = start;
 volatile unsigned int count = 0;
 volatile unsigned char toCount = 0;
@@ -35,6 +31,10 @@ volatile unsigned char restB = 0;
 volatile unsigned char j = 3;
 volatile unsigned char k = 0;
 
+void Timer1_init();
+void Timer0_CTC_init();
+void init_pwm();
+void i2c_init();
 
 int main(void)
 {
@@ -43,6 +43,7 @@ int main(void)
 	DDRB |= (1<<PCHB);
 	DDRC |= (1<<P_RPI_F);
 	Timer0_CTC_init();
+	Timer1_init();
 	i2c_init();
 	// 	state = start;
 	// 	count = START_COUNT;
@@ -57,12 +58,18 @@ void Timer0_CTC_init(){
 	TCCR0A |= (1<<WGM01);
 	TIMSK0 |= (1<<OCIE0A);
 	TIMSK0 |= (1<<OCIE0B);
-	OCR0A = 2;
-	OCR0B = 5;
+	OCR0A = 0;
+	OCR0B = 0;
 	state = start;
 	toCount = 0;
 	stateB = start;
 	toCountB = 0;
+}
+void Timer1_init(){
+	//5alli l tick =1 us
+	//3edd 10,000 tick
+	//to imply 10 ms
+	//ama t5lshom ru7  initiate timer0 tani w e2fl nafsk
 }
 void init_pwm(){
 	char k = 0;
@@ -100,6 +107,13 @@ ISR (TIMER0_COMPA_vect){
 				/*TWCR |= (1<<TWIE);*/
 				PORTC |=(1<<P_RPI_F);
 				//mtnsish tnzliha zero ama td5oli l i2c
+				
+				/*ems7i case end
+				e2fli timer0 ->TIMSK0 &= ~(1<<OCIE0A);
+				TIMSK0 &= ~(1<<OCIE0B);
+				Timer1_init();
+				*/
+				
 			}
 			else state = high;
 			i = (i+1)%3;
@@ -176,22 +190,33 @@ ISR (TIMER0_COMPB_vect){
 	toCountB--;
 }
 void i2c_init(){
+	TWBR = 0;
+	//l comments l gya de talla3t 3kk aw actually mfish data kant btege
+	//TWBR = 100;
+	//N=1
+	/*TWSR |= (1<<0);*/
 	TWCR |= (1<<TWEA);
 	TWCR |= (1<<TWEN);
 	TWCR |= (1<<TWIE);
-	TWAR |= (1<<TWGCE);
+	TWAR = 0x03;
+	TWCR |= (1<<TWINT);
 }
 
 ISR (TWI_vect){
-	if (k==0){
-	PORTC &= ~(1<<P_RPI_F);
-	}
-	pwm[k] = TWDR;
-	k++;
-	TWCR |= (1<<TWINT);
-	if(k==6){
-	ack = 1;
-	k = 0;
-	}
+// 	if (k==0){
+// 	PORTC &= ~(1<<P_RPI_F);
+// 	}
+// 	if(k==6){
+// 	ack = 1;
+// 	k = 0;
+// 	}
 	/*TWCR &= ~(1<<TWIE);*/
+	if((TWSR&(0xF8))==0x60){
+		TWCR |= (1<<TWEN)|(TWINT);
+	}
+	else if((TWSR&(0xF8))==0x80){
+		pwm[k] = TWDR;
+		k++;
+		TWCR |= (1<<TWEN)|(TWINT)|(1<<TWEA);
+	}
 }
