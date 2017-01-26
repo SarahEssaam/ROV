@@ -1,14 +1,15 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#define F_CPU 16000000UL
 
-#define START_COUNT (814*2-1)	//814 usec or 814*2 counts for prescalar = 8 and clk = 16MHz
-#define LOW_COUNT (812*2-1)
-// #define START_COUNT_B (550*2-1)
-// #define LOW_COUNT_B (900*2-1)
-#define START_COUNT_B (814*2-1)
-#define LOW_COUNT_B (812*2-1)
+#define START_COUNT (814*2)	//814 usec or 814*2 counts for prescalar = 8 and clk = 16MHz
+#define LOW_COUNT (812*2)
+#define START_COUNT_B (550*2-1)
+#define LOW_COUNT_B (900*2-1)
+// #define START_COUNT_B (814*2-1)
+// #define LOW_COUNT_B (812*2-1)
 #define PCHA 0	//pin channel A & B
-#define PCHB 1
+#define PCHB 3
 #define P_RPI_F 0
 typedef enum {
 	start,
@@ -18,7 +19,7 @@ typedef enum {
 }status;
 
 volatile unsigned char ack =1;
-volatile unsigned int pwm[] = {2250*2,630*2,1000*2,2250*2,1000*2,630*2};
+volatile unsigned int pwm[] = {2000*2,700*2,1000*2,2250*2,1000*2,630*2};
 volatile status state = start;
 volatile unsigned int count = 0;
 volatile unsigned char toCount = 0;
@@ -29,26 +30,25 @@ volatile unsigned int countB = 0;
 volatile unsigned char toCountB = 0;
 volatile unsigned char restB = 0;
 volatile unsigned char j = 3;
-volatile unsigned char k = 0;
+volatile unsigned char flagHalfCycle = 0;
+
 
 void Timer1_init();
 void Timer0_CTC_init();
 void init_pwm();
-void i2c_init();
+
 
 int main(void)
 {
 	sei();
-	DDRB |= (1<<PCHA);
+	DDRB |= (1<<PCHA)|(1<<(PCHA+1))|(1<<(PCHA+2));
 	DDRB |= (1<<PCHB);
 	DDRC |= (1<<P_RPI_F);
 	Timer0_CTC_init();
 	Timer1_init();
-	i2c_init();
-	// 	state = start;
-	// 	count = START_COUNT;
 	while (1)
-	{}
+	{
+	}
 	
 }
 
@@ -66,61 +66,67 @@ void Timer0_CTC_init(){
 	toCountB = 0;
 }
 void Timer1_init(){
-	//5alli l tick =1 us
-	//3edd 10,000 tick
+	//CTC OCR1A top,prescalar = 8 so tick = 0.5 usec
+	TCCR1B |= (1<<WGM12);
+	TCCR1B |= (1<<CS11);
+	//enable interrupt
+	TIMSK1 |= (1<<OCIE1A);
+	OCR1A = 20000;
 	//to imply 10 ms
-	//ama t5lshom ru7  initiate timer0 tani w e2fl nafsk
+	
 }
-void init_pwm(){
-	char k = 0;
-	for(k;k<6;k++){
-		pwm[i]=630*2-1;
+ISR (TIMER1_COMPA_vect){
+	if(flagHalfCycle==1){
+	//ack = 0;
+	//i2c interrupt enable
+	/*TWCR |= (1<<TWIE);*/
+	PORTC |=(1<<P_RPI_F);
+	//mtnsish tnzliha zero ama td5oli l i2c
+	flagHalfCycle = 0;
 	}
+	else {
+		//e2fli i2c
+		Timer0_CTC_init();
+	}
+	
 }
 
 ISR (TIMER0_COMPA_vect){
-	if(ack==0){
-		init_pwm();
-	}
+// 	if(ack==0){
+// 		init_pwm();
+// 	}
 	switch (state){
 		case start:
-		PORTB &=~(1<<PCHA);
+		PORTB &=~(1<<(PCHA+i));
 		count = START_COUNT;
 		if(toCount==1){
 			state = high;
 		}
 		break;
 		case high:
-		PORTB |= (1<<PCHA);
+		PORTB |= (1<<(PCHA+i));
 		count = pwm[i];
 		if(toCount==1)
 		state = low;
 		break;
+		
 		case low:
-		PORTB &=~(1<<PCHA);
+		PORTB &=~(1<<(PCHA+i));
 		count = LOW_COUNT;
 		if(toCount==1){
-			if(i==2) {	//5llst cycle of 10 ms
-				state = end;
-				//ack = 0;
-				//i2c interrupt enable
-				/*TWCR |= (1<<TWIE);*/
-				PORTC |=(1<<P_RPI_F);
-				//mtnsish tnzliha zero ama td5oli l i2c
-				
-				/*ems7i case end
-				e2fli timer0 ->TIMSK0 &= ~(1<<OCIE0A);
-				TIMSK0 &= ~(1<<OCIE0B);
-				Timer1_init();
-				*/
-				
+			if(i==2) {	
+				//fadlli a-count l rest w ab2a 5lst maximum 10 ms
+				//w ana kda msh ha-count l rest fa fe safety 7etta
+				//e2fli timer0 
+				TIMSK0 &= ~(1<<OCIE0A);
+				flagHalfCycle = 1;
 			}
 			else state = high;
 			i = (i+1)%3;
 		}
 		break;
 		case end:
-		count = 20000-1;
+		count = 20000;
 		//10 msec
 		if(toCount==1)
 		state = start;
@@ -169,7 +175,7 @@ ISR (TIMER0_COMPB_vect){
 		}
 		break;
 		case end:
-		countB = 20000-1;
+		countB = 20000;
 		//10 msec
 		if(toCountB==1)
 		stateB = start;
@@ -188,35 +194,4 @@ ISR (TIMER0_COMPB_vect){
 		OCR0B = 255;
 	}
 	toCountB--;
-}
-void i2c_init(){
-	TWBR = 0;
-	//l comments l gya de talla3t 3kk aw actually mfish data kant btege
-	//TWBR = 100;
-	//N=1
-	/*TWSR |= (1<<0);*/
-	TWCR |= (1<<TWEA);
-	TWCR |= (1<<TWEN);
-	TWCR |= (1<<TWIE);
-	TWAR = 0x03;
-	TWCR |= (1<<TWINT);
-}
-
-ISR (TWI_vect){
-// 	if (k==0){
-// 	PORTC &= ~(1<<P_RPI_F);
-// 	}
-// 	if(k==6){
-// 	ack = 1;
-// 	k = 0;
-// 	}
-	/*TWCR &= ~(1<<TWIE);*/
-	if((TWSR&(0xF8))==0x60){
-		TWCR |= (1<<TWEN)|(TWINT);
-	}
-	else if((TWSR&(0xF8))==0x80){
-		pwm[k] = TWDR;
-		k++;
-		TWCR |= (1<<TWEN)|(TWINT)|(1<<TWEA);
-	}
 }
